@@ -3,6 +3,8 @@ Neuromatch Academy 2020 - An online school for Computational Neuroscience
 
 ## Getting Started
 
-* [Pre-course materials](https://github.com/NeuromatchAcademy/precourse)
+* [Pre-course materials](https://github.com/NeuromatchAcademy/precourse) - Neuromatch Academy precourse GitHub page
+* [Programming with Python](https://swcarpentry.github.io/python-novice-inflammation/) - pre-course python refresher
 * GitHub README Template [README-Template.md](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2)
+* [Jupyter Python Notebook Keyboard Shortcuts](http://maxmelnick.com/2016/04/19/python-beginner-tips-and-tricks.html)
 
