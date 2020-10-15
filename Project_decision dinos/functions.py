@@ -112,7 +112,7 @@ def get_rightward(dat, cont_diff):
         
     return rightward
 
-def func(x,x0, y0, a,b):
+def logistic_function(x,x0, y0, a,b):
     '''
     Four-parameter logistic function for model fitting
     '''
@@ -206,7 +206,6 @@ def get_right_hist_1(dat, cont_diff):
         
     return r_easyr, r_easyl, r_diffr, r_diffl, r_zero, n_trials
 
-
 def get_right_hist_2(dat, cont_diff):
     """
     Inputs: 
@@ -294,3 +293,81 @@ def get_right_hist_2(dat, cont_diff):
                        where=(rzero[0,:,1]!=0)) * 100
         
     return r_easyr, r_easyl, r_diffr, r_diffl, r_zero, n_trials
+
+def get_task_difference(n_session, dat):
+
+    dt = dat['bin_size']                  # binning at 10 ms
+    NT = dat['spks'].shape[-1]
+
+    l_cont = dat['contrast_left']         # contrast left
+    r_cont = dat['contrast_right']        # contrast right
+    
+    cont_diff = r_cont - l_cont              # contrast difference: right if positive, left if negative
+    abs_task_diff = np.abs(r_cont - l_cont)  # absolute contrast difference
+    dtask_diff = np.diff(abs_task_diff)      # change in contrast difference (current - previous)
+    dtdiff = np.insert(dtask_diff, 0, 0)     # adjust the array size
+
+    return dt, NT, cont_diff, abs_task_diff, dtask_diff, dtdiff
+
+def get_right_history(dat, cont_diff):
+    '''
+    Inputs:
+        * dat: data
+        * cont_diff: contrast difference
+
+    Outputs:
+        * idx_RL:
+        * right_levels: 
+    '''
+
+    keys = ['easy_r', 'hard_r', 'zero_r', 'easy_l', 'hard_l', 'zero_l']
+    vals = np.empty([6,9])
+    vals[:] = np.nan
+
+    right_levels = dict(zip(keys,vals))
+
+    response=dat['response'] # all 340 responses 
+
+    # Indices of right/left choice
+    idx_choice_r = np.array([i for i, x in enumerate(response<0) if x]) # trial number of right choice
+    idx_choice_l = np.array([i for i, x in enumerate(response>=0) if x]) # trial number of left choice
+
+    # Task difficulty of the right/left choice
+    level_r = abs(cont_diff[idx_choice_r]) # contrast difficulty (abs of contrast difference) of right choice trials 
+    level_l = abs(cont_diff[idx_choice_r]) # contrast difficulty (abs of contrast difference) of left choice trials 
+
+    idx_RL = [[np.empty(0, int)]*1]*6 # List of empty integer arrays
+
+    # Assign indices of the right choices for each difficulty
+    for i, idx in enumerate(idx_choice_r):
+        if idx == (len(response)-1): continue # Discard the last trial
+            
+        if ((abs(cont_diff[idx]) == 1) | (abs(cont_diff[idx]) == 0.75)): # easy trials
+            idx_RL[0] = np.append(idx_RL[0], idx)
+        elif ((abs(cont_diff[idx]) == 0.25) | (abs(cont_diff[idx]) == 0.5)): # hard trials
+            idx_RL[1] = np.append(idx_RL[1], idx)
+        elif (abs(cont_diff[idx]) == 0): # zero trials
+            idx_RL[2] = np.append(idx_RL[2], idx)
+
+    # Assign indices of the left choices for each difficulty
+    for i, idx in enumerate(idx_choice_l):
+        if idx == (len(response)-1): continue # Discard the last trial
+        
+        if ((abs(cont_diff[idx]) == 1) | (abs(cont_diff[idx]) == 0.75)): # easy trials
+            idx_RL[3] = np.append(idx_RL[3], idx)
+        elif ((abs(cont_diff[idx]) == 0.25) | (abs(cont_diff[idx]) == 0.5)): # hard trials
+            idx_RL[4] = np.append(idx_RL[4], idx)
+        elif (abs(cont_diff[idx]) == 0): # zero trials
+            idx_RL[5] = np.append(idx_RL[5], idx)
+
+    for j in range(6):
+        unique, counts = np.unique(cont_diff[idx_RL[j]+1], return_counts=True) # check the contrast differences and the number of occurences
+
+        print('unique cont_diff size:', np.unique(cont_diff[idx_RL[j]+1]).size, keys[j])
+        for i, val in enumerate(np.unique(cont_diff[idx_RL[j]+1])): # Assumption: cont_diff[...] has all the 9 contrast differences.
+        #     print(i,':', val)
+            resp = dat['response'][idx_RL[j]+1][cont_diff[idx_RL[j]+1]==val]
+            array_indx = (4*val + 4).astype(int) # convert contrast difference value to the corresponding array index
+            right_levels[keys[j]][array_indx] = np.count_nonzero(resp<0) / counts[i]*100 # right choice: i = -1
+
+    return idx_RL, right_levels

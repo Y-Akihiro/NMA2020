@@ -4,6 +4,13 @@ Created on Fri Aug 28 16:28:12 2020
 
 @author: Akihiro
 """
+import numpy as np
+import matplotlib.pyplot as plt
+
+from matplotlib import colors as mcolors
+colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+
 
 def download_data():
     # Downlaod Data
@@ -33,7 +40,6 @@ def download_data():
 
 
     return 
-
 
 def load_data(n_session):
     dat = alldat[n_session]
@@ -162,5 +168,76 @@ def get_right_hist(dat, cont_diff):
         
     return r_easyr, r_easyl, r_diffr, r_diffl, r_zero, n_trials
 
+def get_task_difference(n_session):
+    dat, barea, NN, regions, brain_groups, nareas = load_data(n_session, alldat)
 
+    dt = dat['bin_size']                  # binning at 10 ms
+    NT = dat['spks'].shape[-1]
+
+    l_cont = dat['contrast_left']         # contrast left
+    r_cont = dat['contrast_right']        # contrast right
+    
+    cont_diff = r_cont - l_cont              # contrast difference: right if positive, left if negative
+    abs_task_diff = np.abs(r_cont - l_cont)  # absolute contrast difference
+    dtask_diff = np.diff(abs_task_diff)      # change in contrast difference (current - previous)
+    dtdiff = np.insert(dtask_diff, 0, 0)     # adjust the array size
+
+    return dt, NT, cont_diff, abs_task_diff, dtask_diff, dtdiff
+
+def plot_psychometric(cont_diff, rightward, response, right_levels, idx_RL, n_session, dat):
+	'''
+	Make a psychometric function.
+		
+	'''
+	xdata = np.unique(cont_diff)
+	ydata = rightward
+
+	fig = plt.figure(figsize=(8,6))
+
+	plt.plot(xdata, ydata,'ro-', label='All (%1.0f)'%len(response), alpha=0.5, linewidth=3)
+
+	plt.plot(xdata, right_levels['hard_r'],'D-',  color=colors['darkviolet'], 
+	         label='hard_r (%1.0f)'%(idx_RL[1].size), linewidth=2)
+	plt.plot(xdata, right_levels['easy_r'],'^:',  color=colors['violet'], 
+	         label='easy_r (%1.0f)'%(idx_RL[0].size), linewidth=2)
+	plt.plot(xdata, right_levels['zero_r'],'x--', color=colors['lime'], 
+	         label='zero_r (%1.0f)'%(idx_RL[2].size), linewidth=2, alpha=0.5)
+	plt.plot(xdata, right_levels['zero_l'],'x--', color=colors['deeppink'], 
+	         label='zero_l (%1.0f)'%(idx_RL[5].size), linewidth=2, alpha=0.5)
+	plt.plot(xdata, right_levels['easy_l'],'^:',  color=colors['skyblue'], 
+	         label='easy_l (%1.0f)'%(idx_RL[3].size), linewidth=2)
+	plt.plot(xdata, right_levels['hard_l'],'D-',  color=colors['dodgerblue'], 
+	         label='hard_l (%1.0f)'%(idx_RL[4].size), linewidth=2)
+
+	plt.xlabel('Contrast difference')
+	plt.ylabel('Rightward (%)')
+	plt.title('Session: %1.0f, '%n_session + dat['mouse_name'], fontsize=16)
+	plt.legend(loc='upper left', fontsize=10)
+	plt.show()
+
+def plot_1psychometric(cont_diff, rightward, n_session, dat):
+	'''
+
+	'''
+	xdata = np.unique(cont_diff)
+	ydata = rightward
+
+	fig = plt.figure(figsize=(6,4))
+
+	plt.plot(xdata, ydata,'o-', label=n_session)
+	plt.xlabel('Contrast difference')
+	plt.ylabel('Rightward (%)')
+	plt.title('Session: %1.0f, '%n_session + dat['mouse_name'], fontsize=16)
+	plt.legend(loc='upper left', fontsize=10)
+	plt.grid()
+	plt.show()
+
+def plot_resp_contDiff(dat, cont_diff):
+	'''
+
+	'''
+	plt.plot(cont_diff,'ro-', label='contrast difference')
+	plt.plot(dat['response'],'bo', label='responses: right(+1) and left(-1)')
+	plt.legend()
+	plt.show()
 
