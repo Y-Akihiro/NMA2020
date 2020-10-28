@@ -2,7 +2,10 @@
 """
 Created on Fri Aug 28 16:28:12 2020
 
-@author: Akihiro
+@author: Akihiro Yamaguchi
+
+This script contains a list of functions to generate figures for 'main_behavior_analysis.py'
+
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -168,26 +171,18 @@ def get_right_hist(dat, cont_diff):
         
     return r_easyr, r_easyl, r_diffr, r_diffl, r_zero, n_trials
 
-def get_task_difference(n_session):
-    dat, barea, NN, regions, brain_groups, nareas = load_data(n_session, alldat)
-
-    dt = dat['bin_size']                  # binning at 10 ms
-    NT = dat['spks'].shape[-1]
-
-    l_cont = dat['contrast_left']         # contrast left
-    r_cont = dat['contrast_right']        # contrast right
-    
-    cont_diff = r_cont - l_cont              # contrast difference: right if positive, left if negative
-    abs_task_diff = np.abs(r_cont - l_cont)  # absolute contrast difference
-    dtask_diff = np.diff(abs_task_diff)      # change in contrast difference (current - previous)
-    dtdiff = np.insert(dtask_diff, 0, 0)     # adjust the array size
-
-    return dt, NT, cont_diff, abs_task_diff, dtask_diff, dtdiff
-
-def plot_psychometric(cont_diff, rightward, response, right_levels, idx_RL, n_session, dat):
+def plot_psychometric(cont_diff, rightward, response, right_levels, idx_RL, n_session, dat, srcdir, savefig=False):
 	'''
 	Make a psychometric function.
-		
+	Inputs:
+		* cont_diff:
+		* rightward
+		* response
+		* right_levels
+		* idx_RL:
+		* n_session
+		* dat
+
 	'''
 	xdata = np.unique(cont_diff)
 	ydata = rightward
@@ -213,7 +208,45 @@ def plot_psychometric(cont_diff, rightward, response, right_levels, idx_RL, n_se
 	plt.ylabel('Rightward (%)')
 	plt.title('Session: %1.0f, '%n_session + dat['mouse_name'], fontsize=16)
 	plt.legend(loc='upper left', fontsize=10)
+	plt.grid()
 	plt.show()
+
+	if savefig:
+		print('Saving a figure to', srcdir)
+		fig.savefig('psychometric_session_'+str(n_session)+'.png')
+		plt.close(fig)
+
+def plot_bars(langs, diff_mean, diff_std, srcdir, n_session, saveplot=False):
+	'''
+	This function makes a bar plot with plt.bar().
+
+	Inputs:
+		* langs:
+		* diff_mean:
+		* diff_std:
+		* srcdir:
+		* n_session:
+	'''
+
+	# make a bar plot for one session
+	plt.plot(figsize=(8,6))
+	# ax = fig.add_axes([0.1,0.1,.8,.8]) # ([bottom left, top right])
+	# ax.bar(langs, values, yerr = std_vals, capsize=10)
+	plt.bar(langs, diff_mean, yerr=diff_std, capsize=5)
+	plt.title("Session: %1.0f" %n_session)
+	plt.xlabel("Previous difficulty & choice")
+	# plt.ylabel("Probability of Rightward Choice (%)")
+	plt.ylabel("Mean difference in %right w.r.t ALL")
+	# ax.set_ylim([0,100])
+	plt.grid()
+	plt.show
+
+
+	if saveplot:
+		print('Saving a figure to', srcdir)
+		plt.savefig('bar_'+str(n_session)+'.png')
+		plt.close()
+
 
 def plot_1psychometric(cont_diff, rightward, n_session, dat):
 	'''
@@ -232,12 +265,17 @@ def plot_1psychometric(cont_diff, rightward, n_session, dat):
 	plt.grid()
 	plt.show()
 
-def plot_resp_contDiff(dat, cont_diff):
+def plot_resp_contDiff(dat, cont_diff, n_session):
 	'''
-
+	Inputs:
+		* dat:
+		* cont_diff:
+	Outputs:
+		* No output. Only make one plot. 
 	'''
 	plt.plot(cont_diff,'ro-', label='contrast difference')
 	plt.plot(dat['response'],'bo', label='responses: right(+1) and left(-1)')
+	plt.title('Session: %1.0f, '%n_session + dat['mouse_name'], fontsize=14)
 	plt.legend()
 	plt.show()
 

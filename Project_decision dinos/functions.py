@@ -2,9 +2,10 @@
 """
 Created on Sun Sep 13 11:11:19 2020
 
-@author: Akihiro
+@author: Akihiro Yamaguchi
 
-List of functions 
+List of functions for 'main_behavior_analysis.py'
+
 """
 import os, requests
 import numpy as np
@@ -71,7 +72,9 @@ def load_names(fname=[]):
 
 def load_data(n_session, alldat):
     '''
-    
+    Inputs:
+        * n_session: session number
+        * alldat: 
     '''
     dat = alldat[n_session]
 
@@ -295,6 +298,20 @@ def get_right_hist_2(dat, cont_diff):
     return r_easyr, r_easyl, r_diffr, r_diffl, r_zero, n_trials
 
 def get_task_difference(n_session, dat):
+    '''
+    Description: TBA
+
+    Inputs:
+        * n_session: session number
+        * dat: session specific dataset\n
+    Outputs:
+        * dt:
+        * NT:
+        * cont_diff: contrast difference
+        * abs_task_diff: 
+        * dtask_diff: 
+        * dtdiff:
+    '''
 
     dt = dat['bin_size']                  # binning at 10 ms
     NT = dat['spks'].shape[-1]
@@ -311,22 +328,33 @@ def get_task_difference(n_session, dat):
 
 def get_right_history(dat, cont_diff):
     '''
+    This function make a dictionary of the rightward choice for previous trial 
+    difficulty and response (left/right). 
+
     Inputs:
-        * dat: data
-        * cont_diff: contrast difference
+        * dat: session specific dataset obtained from 'load_data()'
+        * cont_diff: session specific contrast difference from 'get_task_difference()'
 
     Outputs:
-        * idx_RL:
-        * right_levels: 
+        * idx_RL: indices of [...]
+        * right_levels: %rightward for each task difficulty ('easy', 'hard', or 'zero')
+                        and response ('r' or 'l').
+
+    Warning: the indices of the keys in 'right_levels' and 'idx_RL' matches!
+    So be careful when you change their order.
     '''
 
-    keys = ['easy_r', 'hard_r', 'zero_r', 'easy_l', 'hard_l', 'zero_l']
-    vals = np.empty([6,9])
+    # keys = ['easy_r', 'hard_r', 'zero_r', 'easy_l', 'hard_l', 'zero_l', 'all']
+    # the order of the keys I like to use:
+    keys = ['hard_l', 'easy_l', 'zero_l', 'all', 'zero_r', 'easy_r', 'hard_r'] # corresponding idx = 0 to 6.
+    n = len(keys)
+    vals = np.empty([len(keys),9]) # len(keys) should be 7.
     vals[:] = np.nan
 
+    # Construct a dictionary:
     right_levels = dict(zip(keys,vals))
 
-    response=dat['response'] # all 340 responses 
+    response=dat['response'] # all responses (340 for session 11)
 
     # Indices of right/left choice
     idx_choice_r = np.array([i for i, x in enumerate(response<0) if x]) # trial number of right choice
@@ -336,38 +364,91 @@ def get_right_history(dat, cont_diff):
     level_r = abs(cont_diff[idx_choice_r]) # contrast difficulty (abs of contrast difference) of right choice trials 
     level_l = abs(cont_diff[idx_choice_r]) # contrast difficulty (abs of contrast difference) of left choice trials 
 
-    idx_RL = [[np.empty(0, int)]*1]*6 # List of empty integer arrays
+    idx_RL = [[np.empty(0, int)]*1]*n # List of empty integer arrays. Prepare to store lists of indices.
 
-    # Assign indices of the right choices for each difficulty
-    for i, idx in enumerate(idx_choice_r):
-        if idx == (len(response)-1): continue # Discard the last trial
-            
-        if ((abs(cont_diff[idx]) == 1) | (abs(cont_diff[idx]) == 0.75)): # easy trials
-            idx_RL[0] = np.append(idx_RL[0], idx)
-        elif ((abs(cont_diff[idx]) == 0.25) | (abs(cont_diff[idx]) == 0.5)): # hard trials
-            idx_RL[1] = np.append(idx_RL[1], idx)
-        elif (abs(cont_diff[idx]) == 0): # zero trials
-            idx_RL[2] = np.append(idx_RL[2], idx)
-
-    # Assign indices of the left choices for each difficulty
+    # Assign indices of the LEFT choices for each difficulty
     for i, idx in enumerate(idx_choice_l):
         if idx == (len(response)-1): continue # Discard the last trial
         
-        if ((abs(cont_diff[idx]) == 1) | (abs(cont_diff[idx]) == 0.75)): # easy trials
-            idx_RL[3] = np.append(idx_RL[3], idx)
-        elif ((abs(cont_diff[idx]) == 0.25) | (abs(cont_diff[idx]) == 0.5)): # hard trials
+        if ((abs(cont_diff[idx]) == 0.25) | (abs(cont_diff[idx]) == 0.5)): # hard trials
+            idx_RL[0] = np.append(idx_RL[0], idx)
+        elif ((abs(cont_diff[idx]) == 1) | (abs(cont_diff[idx]) == 0.75)): # easy trials
+            idx_RL[1] = np.append(idx_RL[1], idx)
+        if (abs(cont_diff[idx]) == 0): # zero trials
+            idx_RL[2] = np.append(idx_RL[2], idx)
+
+    # For "ALL" trials (340 trials for session 11)
+    idx_RL[3] = np.linspace(0,len(response)-1,len(response)) # Just an array of all the indices
+
+    # Assign indices of the RIGHT choices for each difficulty
+    for i, idx in enumerate(idx_choice_r):
+        if idx == (len(response)-1): continue # Discard the last trial
+        
+        if (abs(cont_diff[idx]) == 0): # zero trials
             idx_RL[4] = np.append(idx_RL[4], idx)
-        elif (abs(cont_diff[idx]) == 0): # zero trials
+        elif ((abs(cont_diff[idx]) == 1) | (abs(cont_diff[idx]) == 0.75)): # easy trials
             idx_RL[5] = np.append(idx_RL[5], idx)
+        elif ((abs(cont_diff[idx]) == 0.25) | (abs(cont_diff[idx]) == 0.5)): # hard trials
+            idx_RL[6] = np.append(idx_RL[6], idx)
 
-    for j in range(6):
-        unique, counts = np.unique(cont_diff[idx_RL[j]+1], return_counts=True) # check the contrast differences and the number of occurences
+    # Fill the %right choice for each of 9 contrast differences
+    for j in range(n-1):
+        # Skip this process for 'all' case (index of 3)
+        if j >=3:
+            j += 1
+            # check the contrast differences and the number of occurences
+            unique, counts = np.unique(cont_diff[idx_RL[j]+1], return_counts=True)
 
-        print('unique cont_diff size:', np.unique(cont_diff[idx_RL[j]+1]).size, keys[j])
-        for i, val in enumerate(np.unique(cont_diff[idx_RL[j]+1])): # Assumption: cont_diff[...] has all the 9 contrast differences.
-        #     print(i,':', val)
-            resp = dat['response'][idx_RL[j]+1][cont_diff[idx_RL[j]+1]==val]
-            array_indx = (4*val + 4).astype(int) # convert contrast difference value to the corresponding array index
-            right_levels[keys[j]][array_indx] = np.count_nonzero(resp<0) / counts[i]*100 # right choice: i = -1
+            print('unique cont_diff size:', np.unique(cont_diff[idx_RL[j]+1]).size, keys[j])
+            for i, val in enumerate(np.unique(cont_diff[idx_RL[j]+1])): # Assumption: cont_diff[...] has all the 9 contrast differences.
+            #     print(i,':', val)
+                resp = dat['response'][idx_RL[j]+1][cont_diff[idx_RL[j]+1]==val]
+                array_indx = (4*val + 4).astype(int) # convert contrast difference value to the corresponding array index
+                right_levels[keys[j]][array_indx] = np.count_nonzero(resp<0) / counts[i]*100 # right choice: i = -1
+        elif j < 3:
+            # check the contrast differences and the number of occurences
+            unique, counts = np.unique(cont_diff[idx_RL[j]+1], return_counts=True)
+
+            print('unique cont_diff size:', np.unique(cont_diff[idx_RL[j]+1]).size, keys[j])
+            for i, val in enumerate(np.unique(cont_diff[idx_RL[j]+1])): # Assumption: cont_diff[...] has all the 9 contrast differences.
+            #     print(i,':', val)
+                resp = dat['response'][idx_RL[j]+1][cont_diff[idx_RL[j]+1]==val]
+                array_indx = (4*val + 4).astype(int) # convert contrast difference value to the corresponding array index
+                right_levels[keys[j]][array_indx] = np.count_nonzero(resp<0) / counts[i]*100 # right choice: i = -1
+
+    right_levels["all"] = get_rightward(dat, cont_diff)
+    print('all trial data is added.')
 
     return idx_RL, right_levels
+
+def get_bars_data(right_levels):
+    '''
+    This function creates a dictionary of previous trial response 
+    & difficulty for 9 contrast differences.
+
+    Inputs:
+        * right_levels: 
+    Outputs: 
+        * langs: 7 difficulty & response keys.
+        * diff_mean: mean of the differences for 9 contrast differences.
+        * diff_std: standard deviation of the differences for 9 contrast differences.
+    '''
+    langs = list(right_levels.keys())
+    values = np.zeros(len(langs))
+    std_vals = np.zeros(len(langs))
+    diff_mean = np.zeros(len(langs))
+    diff_std = np.zeros(len(langs))
+
+    for i, key in enumerate(langs):
+        print('i=%1.0f'%i, key)
+
+        values[i] = right_levels[key][~np.isnan(right_levels[key])].mean()
+        std_vals[i] = right_levels[key][~np.isnan(right_levels[key])].std()
+        diff_mean[i] = np.mean(right_levels['all'][~np.isnan(right_levels[key])] - right_levels[key][~np.isnan(right_levels[key])])
+        diff_std[i] = np.std(right_levels['all'][~np.isnan(right_levels[key])] - right_levels[key][~np.isnan(right_levels[key])])
+        langs[i] = key+'(%1.0f)'%len(right_levels[key][~np.isnan(right_levels[key])])
+        # print('mean: ', str(diff_mean[i]))
+        
+    return langs, diff_mean, diff_std
+
+
