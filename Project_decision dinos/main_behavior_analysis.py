@@ -20,6 +20,17 @@ import Steinmetz_functions as fun_plt # Functions for plotting
 # import matplotlib and set defaults
 from matplotlib import pyplot as plt
 
+# ===================== for plotting =====================
+# Sort colors by hue, saturation, value and name.
+from matplotlib import colors as mcolors
+colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+
+by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgba(color)[:3])), name)
+                for name, color in colors.items())
+sorted_names = [name for hsv, name in by_hsv]
+# ==============================================================
+
 # from matplotlib import rcParams 
 # rcParams['figure.figsize'] = [20, 4]
 # rcParams['font.size'] =15
@@ -38,23 +49,20 @@ def main():
     print('Current directory is...', srcdir)
 
     # Load Data:
-    # alldat = np.array([])
-    # for j in range(len(fname)):
-    #     alldat = np.hstack((alldat, np.load('steinmetz_part%d.npz'%j, allow_pickle=True)['dat']))
+    alldat = np.array([])
+    for j in range(len(fname)):
+        alldat = np.hstack((alldat, np.load('steinmetz_part%d.npz'%j, allow_pickle=True)['dat']))
     
-    # ==========================================
+    # =========== Get data for one selected session ===========
     n_session = 11
     dat, barea, NN, regions, brain_groups, nareas = fun.load_data(n_session, alldat)    
     _, _, cont_diff, _, _, _ = fun.get_task_difference(n_session, dat)
 
-    fun_plt.plot_resp_contDiff(dat, cont_diff, n_session)
-
-    rightward = fun.get_rightward(dat, cont_diff)
-    # ==========================================
     
-    # Plot one psychometric function
-    fun_plt.plot_1psychometric(cont_diff, rightward, n_session, dat)
-
+    # % rightward at each contrast difference
+    rightward = fun.get_rightward(dat, cont_diff) 
+    # =========================================================
+    
     # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
     # check the contrast differences and the number of occurences
     unique, counts = np.unique(cont_diff, return_counts=True) 
@@ -62,19 +70,32 @@ def main():
     for i,val in enumerate(unique): print(val, ':', counts[i])
     # print(dict(zip(unique, counts)))
     
-    # Plot a psychometric curve:
+    # =========== Get data to make a psychometric curve for response+difficulty ===========
     idx_RL, right_levels = fun.get_right_history(dat, cont_diff)
     response = dat['response']
+    
+    # ====================== Plot Stuff Begins ======================
+    # ===============================================================
+    # Plot response and contrast difference for one session
+    fun_plt.plot_resp_contDiff(dat, cont_diff, n_session)
+
+    # Plot one psychometric curve for 'all' data 
+    fun_plt.plot_1psychometric(cont_diff, rightward, n_session, dat)
+
+    # Plot psychometric curve for all responses + difficulties 
     fun_plt.plot_psychometric(cont_diff, rightward, response, right_levels, 
                               idx_RL, n_session, dat, srcdir)
+    # =============================================================
+    # ====================== Plot Stuff Ends ======================
 
-    # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*    
+
+    # -*-*-*- Make a bar plot that corresponds to the above plot -*-*-*-*-*-*
     langs, diff_mean, diff_std = fun.get_bars_data(right_levels)
-    
+    fig0, ax0 = plt.subplots(1,1)
     fun_plt.plot_bars(langs, diff_mean, diff_std, srcdir, n_session)
     
     # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-    
+    # Testing box plot
     langs = ['hard_l', 'easy_l', 'zero_l', 'all', 'zero_r', 'easy_r', 'hard_r']  
     vals = np.empty([7,9])
     vals[:]=np.nan
@@ -91,8 +112,8 @@ def main():
 
     fig1, ax1 = plt.subplots(1,1)
     ax1.boxplot(test_data['hard_r']) # Both plt.boxplot() or plt.bar() might work.
-    for tick, label in 
-    ax1.text
+    # for tick, label in 
+    # ax1.text
     
     # Get the average over all sessions
     test = np.zeros([7,len(alldat),2])
@@ -112,32 +133,6 @@ def main():
     val_mean = np.mean(test[:,:,0], axis=1)
     plt.bar(langs, val_mean)
     
-    # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
-    # Plot psychometric curves for all sessions:    
-    # for n_session in range(len(alldat)):
-    #     dat, barea, NN, regions, brain_groups, nareas = fun.load_data(n_session, alldat)    
-    #     _, _, cont_diff, _, _, _ = fun.get_task_difference(n_session, dat)
-    #     rightward = fun.get_rightward(dat, cont_diff)
-    #     idx_RL, right_levels = fun.get_right_history(dat, cont_diff)
-    #     response = dat['response']
-        
-    #     # fun_plt.plot_psychometric(cont_diff, rightward, response, right_levels,
-    #     #                           idx_RL, n_session, dat, srcdir, savefig=True)
-    #     langs, diff_mean, diff_std = fun.get_bars_data(right_levels)
-    #     fun_plt.plot_bars(langs, diff_mean, diff_std, srcdir, n_session, saveplot=True)
-        
-    #     print(n_session)
-    
-# ===================== for plotting stuff =====================
-# Sort colors by hue, saturation, value and name.
-from matplotlib import colors as mcolors
-colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
-colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
-
-by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgba(color)[:3])), name)
-                for name, color in colors.items())
-sorted_names = [name for hsv, name in by_hsv]
-# ==============================================================
     
 if __name__ == "__main__":
     print(os.path.dirname(os.path.realpath(__file__)))
