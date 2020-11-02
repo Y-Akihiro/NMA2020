@@ -4,7 +4,8 @@ Created on Fri Aug 28 16:28:12 2020
 
 @author: Akihiro Yamaguchi
 
-This script contains a list of functions to generate figures for 'main_behavior_analysis.py'
+This script contains a list of functions to generate figures.
+They are used in 'main_behavior_analysis.py' and 'batch_behavior_analysis.py'.
 
 """
 import numpy as np
@@ -104,7 +105,7 @@ def plot_psychometric(cont_diff, rightward, response, right_levels, idx_RL, n_se
 
 	if savefig:
 		print('Saving a figure to', srcdir)
-		fig.savefig('psychometric_session_'+str(n_session)+'.png')
+		fig.savefig('resp_dir_'+str(n_session)+'.png')
 		plt.close(fig)
 
 def plot_bars(langs, diff_mean, diff_std, srcdir, n_session, saveplot=False):
@@ -137,6 +138,54 @@ def plot_bars(langs, diff_mean, diff_std, srcdir, n_session, saveplot=False):
 		plt.savefig('bar_'+str(n_session)+'.png')
 		plt.close(fig)
 
+# def plot_psych_correct_response(saveplot=False):
+    
+def plot_stim_dir(n_session, dat, cont_diff, right_levels, keys, n_trials, saveplot=False):
+    '''
+
+    Parameters
+    ----------
+    n_session : TYPE
+    dat : TYPE
+    cont_diff : TYPE
+    rightward : TYPE
+    r_diffr : TYPE
+    r_easyr : TYPE
+    r_easyl : TYPE
+    r_diffl : TYPE
+
+    Returns
+    -------
+    None. Only a figure.
+
+    '''
+    fig = plt.figure(figsize=(7,5))
+
+    xdata = np.unique(cont_diff)
+    plt.plot(xdata, right_levels['all'],'ro-', 
+             label='all (%1.0f)'%n_trials['all'], alpha=0.5, linewidth=3)
+    plt.plot(xdata, right_levels['hard_cr'],'D-', color=colors['darkviolet'],
+             label='hard_r (%1.0f)'%n_trials['hard_cr'], alpha=0.5, linewidth=2)
+    plt.plot(xdata, right_levels['easy_cr'],'^:', color=colors['violet'],
+             label='easy_r (%1.0f)'%n_trials['easy_cr'], alpha=0.5, linewidth=2)
+    plt.plot(xdata, right_levels['zero'],'x--', color=colors['deeppink'],
+             label='zero (%1.0f)'%n_trials['zero'], linewidth=2)
+    plt.plot(xdata, right_levels['easy_cl'],'^:', color=colors['skyblue'],
+             label='easy_l (%1.0f)'%n_trials['easy_cl'], alpha=0.5, linewidth=2)
+    plt.plot(xdata, right_levels['hard_cl'],'D-', color=colors['dodgerblue'], 
+             label='diff_l (%1.0f)'%n_trials['hard_cl'], alpha=0.5, linewidth=2)
+
+    plt.xlabel('Contrast difference')
+    plt.ylabel('Rightward (%)')
+    plt.title('Session: %1.0f, '%n_session + dat['mouse_name'])
+    plt.legend(fontsize=8)
+    plt.grid()
+    plt.show()
+
+    if saveplot:
+        print('Saving a figure...')
+        plt.savefig('stim_dir_'+str(n_session)+'.png')
+        plt.close(fig)
 
 
 

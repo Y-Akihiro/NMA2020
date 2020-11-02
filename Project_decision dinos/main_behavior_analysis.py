@@ -48,7 +48,7 @@ def main():
     srcdir = os.getcwd()
     print('Current directory is...', srcdir)
 
-    # Load Data:
+    # ====================== Lost Stuff ======================
     alldat = np.array([])
     for j in range(len(fname)):
         alldat = np.hstack((alldat, np.load('steinmetz_part%d.npz'%j, allow_pickle=True)['dat']))
@@ -58,21 +58,23 @@ def main():
     dat, barea, NN, regions, brain_groups, nareas = fun.load_data(n_session, alldat)    
     _, _, cont_diff, _, _, _ = fun.get_task_difference(n_session, dat)
 
-    
+    # ====================== Compute Stuff ======================
     # % rightward at each contrast difference
     rightward = fun.get_rightward(dat, cont_diff) 
-    # =========================================================
     
-    # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
     # check the contrast differences and the number of occurences
     unique, counts = np.unique(cont_diff, return_counts=True) 
     print('Contrast difference and no. of trials:')
     for i,val in enumerate(unique): print(val, ':', counts[i])
     # print(dict(zip(unique, counts)))
     
-    # =========== Get data to make a psychometric curve for response+difficulty ===========
+    # Get data to make a psychometric curve for response+difficulty
     idx_RL, right_levels = fun.get_right_history(dat, cont_diff)
     response = dat['response']
+    
+    # Prepare for a bar plot 
+    langs, diff_mean, diff_std = fun.get_bars_data(right_levels)
+    right_levels2, keys, n_trials = fun.get_right_hist_1(dat, cont_diff)
     
     # ====================== Plot Stuff Begins ======================
     # ===============================================================
@@ -85,16 +87,19 @@ def main():
     # Plot psychometric curve for all responses + difficulties 
     fun_plt.plot_psychometric(cont_diff, rightward, response, right_levels, 
                               idx_RL, n_session, dat, srcdir)
+    
+    # Make a bar plot that corresponds to the following psychometric curve
+    fig0, ax0 = plt.subplots(1,1)
+    fun_plt.plot_bars(langs, diff_mean, diff_std, srcdir, n_session)
+
+    # Plot psychometric curve with stimulus direction history.
+    fun_plt.plot_stim_dir(n_session, dat, cont_diff, right_levels2, keys, n_trials, saveplot=False)
+
     # =============================================================
     # ====================== Plot Stuff Ends ======================
 
-
-    # -*-*-*- Make a bar plot that corresponds to the above plot -*-*-*-*-*-*
-    langs, diff_mean, diff_std = fun.get_bars_data(right_levels)
-    fig0, ax0 = plt.subplots(1,1)
-    fun_plt.plot_bars(langs, diff_mean, diff_std, srcdir, n_session)
     
-    # -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*
+    # ====================== Test Stuff ======================
     # Testing box plot
     langs = ['hard_l', 'easy_l', 'zero_l', 'all', 'zero_r', 'easy_r', 'hard_r']  
     vals = np.empty([7,9])

@@ -33,9 +33,12 @@ def main():
         
         # fun_plt.plot_psychometric(cont_diff, rightward, response, right_levels,
         #                           idx_RL, n_session, dat, srcdir, savefig=True)
-        langs, diff_mean, diff_std = fun.get_bars_data(right_levels)
-        fun_plt.plot_bars(langs, diff_mean, diff_std, srcdir, n_session, saveplot=True)
+        # langs, diff_mean, diff_std = fun.get_bars_data(right_levels)
+        # fun_plt.plot_bars(langs, diff_mean, diff_std, srcdir, n_session, saveplot=True)
         
+        # right_levels, keys, n_trials = fun.get_right_hist_1(dat, cont_diff)
+        # fun_plt.plot_stim_dir(n_session, dat, cont_diff, right_levels, keys, n_trials, saveplot=True)
+
         print(n_session)
 
 
