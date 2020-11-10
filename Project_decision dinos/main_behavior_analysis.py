@@ -14,21 +14,22 @@ import os
 import matplotlib.cm as cm
 colormap = cm.viridis
 
-import functions as fun # functions for analysis, loading data, etc.
-import Steinmetz_functions as fun_plt # Functions for plotting
+import functions_get_ as fun # functions for analysis, loading data, etc.
+import functions_plot_ as fun_plt # Functions for plotting
 
 # import matplotlib and set defaults
 from matplotlib import pyplot as plt
 
 # ===================== for plotting =====================
 # Sort colors by hue, saturation, value and name.
-from matplotlib import colors as mcolors
-colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
-colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+colors, _, _ = fun.get_colors()
+# from matplotlib import colors as mcolors
+# colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+# colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
 
-by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgba(color)[:3])), name)
-                for name, color in colors.items())
-sorted_names = [name for hsv, name in by_hsv]
+# by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgba(color)[:3])), name)
+#                 for name, color in colors.items())
+# sorted_names = [name for hsv, name in by_hsv]
 # ==============================================================
 
 # from matplotlib import rcParams 

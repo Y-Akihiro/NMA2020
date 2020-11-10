@@ -14,7 +14,10 @@ from IPython.display import HTML
 import random
 
 def download_data():
-    # Downlaod Data
+    '''
+    A function to downlaod data files from osf website. Only need to run once.
+    Returns 'alldat'
+    '''
     fname = []
     for j in range(3):
         fname.append('steinmetz_part%d.npz'%j)
@@ -41,7 +44,31 @@ def download_data():
 
     return alldat
 
+def get_colors():
+    '''
+    Returns
+    -------
+    colors : 156 different colors defined by names (dict)
+    by_hsv : 156 colors defined by RGB values (list) 
+    sorted_names : sorted names of 156 colors (str)
+
+    '''
+    # ===================== for plotting =====================
+    # Sort colors by hue, saturation, value and name.
+    from matplotlib import colors as mcolors
+    colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+    colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
+    
+    by_hsv = sorted((tuple(mcolors.rgb_to_hsv(mcolors.to_rgba(color)[:3])), name)
+                    for name, color in colors.items())
+    sorted_names = [name for hsv, name in by_hsv]
+    
+    return colors, by_hsv, sorted_names
+
 def hide_toggle(for_next=False):
+    '''
+    This is a function to reduce space for jupyter notebook. 
+    '''
     this_cell = """$('div.cell.code_cell.rendered.selected')"""
     next_cell = this_cell + '.next()'
 
@@ -251,7 +278,7 @@ def get_right_hist_2(dat, cont_diff):
     unique, counts = np.unique(cont_diff, return_counts=True) # check the contrast differences and the number of occurences
 
     n_el = n_dl = n_er = n_dr = n_zero = 0
-    
+
     # Define easy/difficult left/right (boolean array)
     easy_l = (cont_diff==-1) + (cont_diff==-0.75)
     diff_l = (cont_diff==-0.25) + (cont_diff==-0.5)
@@ -346,9 +373,9 @@ def get_task_difference(n_session, dat):
 
     l_cont = dat['contrast_left']         # contrast left
     r_cont = dat['contrast_right']        # contrast right
-    
-    cont_diff = r_cont - l_cont              # contrast difference: right if positive, left if negative
-    abs_task_diff = np.abs(r_cont - l_cont)  # absolute contrast difference
+
+    cont_diff = l_cont - r_cont              # contrast difference: right if negative, left if positive
+    abs_task_diff = np.abs(l_cont - r_cont)  # absolute contrast difference
     dtask_diff = np.diff(abs_task_diff)      # change in contrast difference (current - previous)
     dtdiff = np.insert(dtask_diff, 0, 0)     # adjust the array size
 
@@ -360,7 +387,7 @@ def get_right_history(dat, cont_diff):
     difficulty and response (left/right). 
 
     Inputs:
-        * dat: session specific dataset obtained from 'load_data()'
+    	* dat: session specific dataset obtained from 'load_data()'
         * cont_diff: session specific contrast difference from 'get_task_difference()'
 
     Outputs:

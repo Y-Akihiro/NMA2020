@@ -99,7 +99,7 @@ def plot_psychometric(cont_diff, rightward, response, right_levels, idx_RL, n_se
 	plt.xlabel('Contrast difference')
 	plt.ylabel('Rightward (%)')
 	plt.title('Session: %1.0f, '%n_session + dat['mouse_name'], fontsize=16)
-	plt.legend(loc='upper left', fontsize=10)
+	plt.legend(loc='upper right', fontsize=10)
 	plt.grid()
 	fig.show()
 
@@ -186,9 +186,6 @@ def plot_stim_dir(n_session, dat, cont_diff, right_levels, keys, n_trials, savep
         print('Saving a figure...')
         plt.savefig('stim_dir_'+str(n_session)+'.png')
         plt.close(fig)
-
-
-
 
 
 

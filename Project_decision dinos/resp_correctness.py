@@ -8,8 +8,11 @@ Goals:
         * Plot the psychometric curve of previous response + correctness.
         * See/Check if there's any behavioral pattern that we can find.
 """
+import os
+import functions_get_ as fun
+import numpy as np
+import matplotlib.pyplot as plt
 
-import functions as fun
 # Load data (run functions in 'main_behavior_analysis.py')
 fname = [] # initialize the list
 fname = fun.load_names()
@@ -101,6 +104,7 @@ for key in keys:
         right_levels[key][i_temp]=np.nan # replace the empty element with NaN
 # return right_levels, 
 
+colors, _, _ = fun.get_colors()
 fig = plt.figure(figsize=(8,6))
 xdata = np.unique(stim_dir)
 plt.plot(xdata, 100-right_levels['all'],'ro-', label='All (%1.0f)'%n_trials['all'], alpha=0.5, linewidth=3)
