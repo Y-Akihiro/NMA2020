@@ -68,9 +68,11 @@ fun_plt.plot_psychometric(cont_diff, rightward, data_all['response'], right_leve
                           idx_RL, 10050, data_all, srcdir)
 
 # ==== Make a bar plot ====
-
 langs, diff_mean, diff_std = fun.get_bars_data(right_levels)
 fun_plt.plot_bars(langs, diff_mean, diff_std, srcdir, 10050)
 
+# ==== Psycometric curve with previous response & correctness ====
 
+right_levels, n_trials = fun.get_correctness(data_all, cont_diff)
+fun_plt.plot_correctness(dat, right_levels, cont_diff, n_trials, 10050, saveplot=False)
 

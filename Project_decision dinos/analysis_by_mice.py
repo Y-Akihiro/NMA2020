@@ -83,11 +83,15 @@ cont_diff = fun_spc.get_contDiff(mice_data, unique_names)
 
 right = {}
 for name in unique_names:
+    print(name)
     right[name] = fun_spc.get_rightward(mice_data, cont_diff, name)
 # fun_spc.plot_rightward(right, cont_diff, unique_names, saveplot=False)
 
     idx_RL, right_levels = fun_spc.get_right_history(mice_data, cont_diff, name)
 
+    langs, diff_mean, diff_std = fun.get_bars_data(right_levels)
+    fun_spc.plot_bars(langs, diff_mean, diff_std, name, srcdir, saveplot=True)
 
-    fun_spc.plot_psychometric(mice_data, cont_diff, name, idx_RL, right_levels, right[name], savefig=True)
+    # fun_spc.plot_psychometric(mice_data, cont_diff, name, idx_RL, right_levels, right[name], savefig=False)
+
 

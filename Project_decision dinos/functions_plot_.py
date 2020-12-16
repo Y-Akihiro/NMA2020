@@ -10,7 +10,7 @@ They are used in 'main_behavior_analysis.py' and 'batch_behavior_analysis.py'.
 """
 import numpy as np
 import matplotlib.pyplot as plt
-
+import functions_get_ as fun
 from matplotlib import colors as mcolors
 colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
 colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
@@ -187,5 +187,34 @@ def plot_stim_dir(n_session, dat, cont_diff, right_levels, keys, n_trials, savep
         plt.savefig('stim_dir_'+str(n_session)+'.png')
         plt.close(fig)
 
+def plot_correctness(dat, right_levels, cont_diff, n_trials, n_session, saveplot=False):
 
+	colors, _, _ = fun.get_colors()
+	fig = plt.figure(figsize=(8,6))
+	xdata = np.unique(cont_diff)
+	plt.plot(xdata, right_levels['all'],'ro-', label='All (%1.0f)'%n_trials['all'], alpha=0.5, linewidth=3)
 
+	plt.plot(xdata, right_levels['r_cct'],'D-',  color=colors['darkviolet'], 
+	         label='r_cct (%1.0f)'%n_trials['r_cct'], linewidth=2)
+	plt.plot(xdata, right_levels['r_incct'],'^:',  color=colors['violet'], 
+	         label='r_incct (%1.0f)'%n_trials['r_incct'], linewidth=2)
+	plt.plot(xdata, right_levels['l_cct'],'x--', color=colors['lime'], 
+	         label='l_cct (%1.0f)'%n_trials['l_cct'], linewidth=2, alpha=0.5)
+	plt.plot(xdata, right_levels['l_incct'],'x--', color=colors['deeppink'], 
+	         label='l_incct (%1.0f)'%n_trials['l_incct'], linewidth=2, alpha=0.5)
+	plt.plot(xdata, right_levels['zero_cct'],'^:',  color=colors['skyblue'], 
+	         label='zero_cct (%1.0f)'%n_trials['zero_cct'], linewidth=2)
+	plt.plot(xdata, right_levels['zero_incct'],'D-',  color=colors['dodgerblue'], 
+	         label='zero_incct (%1.0f)'%n_trials['zero_incct'], linewidth=2)
+
+	plt.xlabel('Contrast difference')
+	plt.ylabel('Rightward (%)')
+	plt.title('Session: %1.0f, '%n_session + dat['mouse_name'], fontsize=16)
+	plt.legend(loc='upper right', fontsize=10)
+	plt.grid()
+	fig.show()
+
+	if saveplot:
+		print('Saving a figure...')
+		plt.savefig('correctness_'+str(n_session)+'.png')
+		plt.close(fig)

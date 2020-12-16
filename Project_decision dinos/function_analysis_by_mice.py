@@ -248,3 +248,33 @@ def plot_resp_contDiff(mice_data, name, cont_diff, saveplot=False):
 		plt.savefig(name+'(%1.0f)'%(len(cont_diff[name]))+'_cont_diff'+'.png')
 		plt.close(fig)
 
+def plot_bars(langs, diff_mean, diff_std, name, srcdir, saveplot=False):
+	'''
+	This function makes a bar plot with plt.bar().
+
+	Inputs:
+		* langs:
+		* diff_mean:
+		* diff_std:
+		* srcdir:
+		* n_session:
+	'''
+
+	# make a bar plot for one session
+	fig = plt.plot(figsize=(8,6))
+	# ax = fig.add_axes([0.1,0.1,.8,.8]) # ([bottom left, top right])
+	# ax.bar(langs, values, yerr = std_vals, capsize=10)
+	plt.bar(langs, diff_mean, yerr=diff_std, capsize=5)
+	plt.title(name)
+	plt.xlabel("Previous difficulty & choice")
+	# plt.ylabel("Probability of Rightward Choice (%)")
+	plt.ylabel("Mean difference in %right w.r.t ALL")
+	# ax.set_ylim([0,100])
+	plt.grid()
+	plt.show
+
+	if saveplot:
+		print('Saving a figure to', srcdir)
+		plt.savefig('bar_'+name+'.png')
+		plt.close()
+
