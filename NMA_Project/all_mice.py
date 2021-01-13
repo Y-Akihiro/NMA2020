@@ -71,8 +71,11 @@ fun_plt.plot_psychometric(cont_diff, rightward, data_all['response'], right_leve
 langs, diff_mean, diff_std = fun.get_bars_data(right_levels)
 fun_plt.plot_bars(langs, diff_mean, diff_std, srcdir, 10050)
 
-# ==== Psycometric curve with previous response & correctness ====
+# ==== Psycometric curve with previous stimulus direction & task difficulty ====
 
+
+
+# ==== Psycometric curve with previous response & correctness ====
 import superstition_check as sc
 idx_RL, right_levels, keys = sc.get_belief(data_all)
 def plt_belief_all(idx_RL, right_levels, keys, 
@@ -110,7 +113,7 @@ def plt_belief_all(idx_RL, right_levels, keys,
     
     plt.xlabel('Contrast difference')
     plt.ylabel('Rightward (%)')
-    plt.title('Mice: ' + name +' (superstition)', 
+    plt.title('All mice: %1.0f trials' %len(cont_diff) + ' (superstition)', 
     		  fontsize=12)
     plt.legend(loc='upper right', fontsize=10)
     
@@ -122,10 +125,9 @@ def plt_belief_all(idx_RL, right_levels, keys,
         plt.savefig('belief_' + name + '.png')
         plt.close(fig)
 
-plt_belief(data_all, n_session, cont_diff, rightward, srcdir,
-           idx_RL, right_levels, keys, saveplot=False)
-
-
+plt_belief_all(idx_RL, right_levels, keys,
+               cont_diff, rightward, srcdir,
+               saveplot=False)
 
 right_levels, n_trials = fun.get_correctness(data_all, cont_diff)
 fun_plt.plot_correctness(dat, right_levels, cont_diff, n_trials, 10050, saveplot=False)

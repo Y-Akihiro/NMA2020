@@ -94,15 +94,26 @@ def main():
     fun_plt.plot_bars(langs, diff_mean, diff_std, srcdir, n_session)
 
     # Plot psychometric curve with stimulus direction history.
-    fun_plt.plot_stim_dir(n_session, dat, cont_diff, right_levels2, keys, n_trials, saveplot=False)
+    fun_plt.plot_stim_dir(n_session, dat, cont_diff, right_levels2, 
+                          keys, n_trials, saveplot=False)
 
     # =============================================================
     # ====================== Plot Stuff Ends ======================
 
     
     # ====================== Test Stuff ======================
-    # Testing box plot
-    langs = ['hard_l', 'easy_l', 'zero_l', 'all', 'zero_r', 'easy_r', 'hard_r']  
+    # Testing box plot (difficulty & response. This doesn't include
+    #                   zero difference & no go case.) 
+    langs = ['hard_l', 'easy_l', 'zero_l', 'all', 'zero_r', 'easy_r', 'hard_r']
+    #  -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+    #  -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+    #  -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+    # This categorization should be (for the stimulus psychometric curve)
+    langs = ['hard_l', 'hard_r', 'hard_z', 'all', 'easy_z', 'easy_r', 'easy_l']
+    
+    #  -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+    #  -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+    #  -*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
     vals = np.empty([7,9])
     vals[:]=np.nan
     

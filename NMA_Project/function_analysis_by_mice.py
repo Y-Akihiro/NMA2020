@@ -38,13 +38,16 @@ def get_rightward(mice_data, cont_diff, name):
 	Inputs:
 		'cont_diff': contrast difference between left and right visual stimuli. (dictionary)
 		'name': name of the mice.
-
+    
+    Returns:
+        'rightward': % rightward response.
 	'''
-	rightward = np.zeros(len(np.unique(cont_diff[name]))) * np.nan
-	unique, counts = np.unique(cont_diff[name], return_counts=True) # check the contrast differences and the number of occurences
+    
+	rightward = np.zeros(len(np.unique(cont_diff))) * np.nan
+	unique, counts = np.unique(cont_diff, return_counts=True) # check the contrast differences and the number of occurences
 
-	for i, val in enumerate(np.unique(cont_diff[name])):
-		resp = mice_data[name, 'response'][cont_diff[name]==val]
+	for i, val in enumerate(np.unique(cont_diff)):
+		resp = mice_data[name, 'response'][cont_diff==val]
 		rightward[i] = np.count_nonzero(resp<0) / counts[i]*100 # '-1' for 'right' choice
 
 	return rightward
@@ -149,7 +152,7 @@ def get_right_history(mice_data, cont_diff_dict, name):
 # *-*-*-*-*-*-*-*-*-*-*-*-*-*-* Plot Functions *-*-*-*-*-*-*-*-*-*-*-*-*-*-*
 # *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-**    
 
-def plot_rightward(rightward, cont_diff, names, saveplot=False):
+def plot_rightward(rightward, cont_diff, name, saveplot=False):
 	'''
 	INPUTS:
 		'rightward': dictionary of %rightward response for each mice.
@@ -158,23 +161,21 @@ def plot_rightward(rightward, cont_diff, names, saveplot=False):
 		'saveplot': Optional. set 'True' to save the figure.
 	'''
 
-	plt.figure(figsize=(12,8))
-
-	for name in names:
-		xdata = np.unique(cont_diff[name])
-		ydata = rightward[name]
-		plt.plot(xdata, ydata,'o-', label=name+' (%1.0f)'%len(cont_diff[name]))
+	fig = plt.figure(figsize=(8,6))   
+	xdata = np.unique(cont_diff)
+	ydata = rightward
+	plt.plot(xdata, ydata,'o-', label=name +' (%1.0f)'%len(cont_diff))
 
 	plt.xlabel('Contrast difference (contrast_left - contrast_right)', fontsize=12)
 	plt.ylabel('Rightward (%)', fontsize=12)
-	# plt.title(name, fontsize=16)
+	plt.title(name, fontsize=12)
 	plt.legend(loc='upper right', fontsize=10)
-	plt.grid()
+	plt.grid(alpha=0.4)
 	plt.show()
 
 	if saveplot:
 		print('Saving a figure...')
-		plt.savefig(name+'(%1.0f)'%(len(cont_diff[name]))+'_rightward'+'.png')
+		plt.savefig(name+'(%1.0f)'%(len(cont_diff))+'_rightward'+'.png')
 		plt.close(fig)
 
 def plot_psychometric(mice_data, cont_diff, name, idx_RL, right_levels, rightward, savefig=False):
@@ -212,15 +213,61 @@ def plot_psychometric(mice_data, cont_diff, name, idx_RL, right_levels, rightwar
 
 	plt.xlabel('Contrast difference (contrast_left - contrast_right)', fontsize=12)
 	plt.ylabel('Rightward (%)', fontsize=12)
-	plt.title(name + ' (%1.0f trials)'%len(cont_diff[name]), fontsize=16)
+	plt.title(name + ' (%1.0f trials) (Response)'%len(cont_diff[name]), fontsize=12)
 	plt.legend(loc='upper right', fontsize=10)
 	plt.grid()
 	fig.show()
 
 	if savefig:
 		print('Saving a figure...')
-		fig.savefig(name+'_(%1.0f_trials)'%len(cont_diff[name])+'.png')
+		fig.savefig(name+'_response_(%1.0f_trials)'%len(cont_diff[name])+'.png')
 		plt.close(fig)
+
+def plot_stim_dir(mice_data, cont_diff, name, keys, n_trials,
+                  right_levels, savefig=False):
+	'''
+	Make a psychometric function with previous stimulus direction.
+	Inputs:
+        'mice_data': 
+		'cont_diff':
+		'name': % rightward 
+		'idx_RL': indices of response+difficulty. (idx_RL[0] for hard_l, [6] for hard_r)
+		'right_levels': 
+        'rightward': % rightward
+        'savefig': True or False to save a figure or not.
+
+	'''
+	xdata = np.unique(cont_diff[name])
+# 	ydata = rightward
+
+	fig = plt.figure(figsize=(8,6))
+
+	plt.plot(xdata, right_levels[keys[5]],'ro-',
+	         label=keys[5]+' (%1.0f)'%(n_trials[keys[5]]), alpha=0.5, linewidth=3)
+
+	plt.plot(xdata, right_levels[keys[3]],'D-', color=colors['darkviolet'],
+	         label=keys[3]+' (%1.0f)'%(n_trials[keys[3]]), alpha=0.5, linewidth=2)
+	plt.plot(xdata, right_levels[keys[2]],'^:', color=colors['violet'],
+	         label=keys[2]+' (%1.0f)'%(n_trials[keys[2]]), alpha=0.5, linewidth=2)
+	plt.plot(xdata, right_levels[keys[4]],'x--', color=colors['deeppink'],
+	         label=keys[4]+' (%1.0f)'%(n_trials[keys[4]]), linewidth=2)
+	plt.plot(xdata, right_levels[keys[1]],'^:', color=colors['skyblue'],
+	         label=keys[1]+' (%1.0f)'%(n_trials[keys[1]]), alpha=0.5, linewidth=2)
+	plt.plot(xdata, right_levels[keys[0]],'D-', color=colors['dodgerblue'], 
+	         label=keys[0]+' (%1.0f)'%(n_trials[keys[0]]), alpha=0.5, linewidth=2)
+
+	plt.xlabel('Contrast difference')
+	plt.ylabel('Rightward (%)')
+	plt.title(name + ' (%1.0f)'%(cont_diff[name].size) + ' (stimulus direction)', fontsize=12)
+	plt.legend(fontsize=8)
+	plt.grid(alpha=0.4)
+	plt.show()
+
+	if savefig:
+	    print('Saving a figure...')
+	    plt.savefig('stim_dir_'+name+'.png')
+	    plt.close(fig)
+
 
 def plot_resp_contDiff(mice_data, name, cont_diff, saveplot=False):
 	'''

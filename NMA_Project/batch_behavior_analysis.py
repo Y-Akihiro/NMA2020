@@ -29,19 +29,21 @@ def main():
         dat, barea, NN, regions, brain_groups, nareas = fun.load_data(n_session, alldat)    
         _, _, cont_diff, _, _, _ = fun.get_task_difference(n_session, dat)
         rightward = fun.get_rightward(dat, cont_diff)
-        # idx_RL, right_levels = fun.get_right_history(dat, cont_diff)
+        idx_RL, right_levels = fun.get_right_history(dat, cont_diff)
         # response = dat['response'] 
         
-        idx_RL, right_levels, keys = sc.get_belief(dat)
-        sc.plt_belief(dat, n_session, cont_diff, rightward, srcdir,
-               idx_RL, right_levels, keys, saveplot=True)
+        # idx_RL, right_levels, keys = sc.get_belief(dat)
+        # sc.plt_belief(dat, n_session, cont_diff, rightward, srcdir,
+        #        idx_RL, right_levels, keys, saveplot=True)
+
         # fun_plt.plot_psychometric(cont_diff, rightward, response, right_levels,
         #                           idx_RL, n_session, dat, srcdir, savefig=True)
         # langs, diff_mean, diff_std = fun.get_bars_data(right_levels)
         # fun_plt.plot_bars(langs, diff_mean, diff_std, srcdir, n_session, saveplot=True)
         
-        # right_levels, keys, n_trials = fun.get_right_hist_1(dat, cont_diff)
-        # fun_plt.plot_stim_dir(n_session, dat, cont_diff, right_levels, keys, n_trials, saveplot=True)
+        right_levels, keys, n_trials = fun.get_right_hist_1(dat, cont_diff)
+        fun_plt.plot_stim_dir(n_session, dat, cont_diff, right_levels, 
+                              keys, n_trials, saveplot=True)
 
         print(n_session)
 

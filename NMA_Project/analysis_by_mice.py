@@ -13,7 +13,7 @@ Steps:
 import os
 import functions_get_ as fun
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 # Load data (run functions in 'main_behavior_analysis.py')
 fname = [] # initialize the list
@@ -81,10 +81,40 @@ cont_diff = fun_spc.get_contDiff(mice_data, unique_names)
 # for name in unique_names:
 #     fun_spc.plot_resp_contDiff(mice_data, name, cont_diff, saveplot=True)
 
-import superstition_check as sc
-
-for name in unique_names: 
+right = {}
+for name in unique_names:
+    print(name)
     
+    # Psychometric curve (general)
+    # right[name] = fun_spc.get_rightward(mice_data, cont_diff[name], name)
+    # fun_spc.plot_rightward(right[name], cont_diff[name], name, saveplot=False)
+
+    # Psychometric curve (previous difficulty and response)
+    # idx_RL, right_levels = fun_spc.get_right_history(mice_data, cont_diff, name)
+    # fun_spc.plot_psychometric(mice_data, cont_diff, name, idx_RL, right_levels, 
+    #                           right[name], savefig=True)
+
+    # Psychometric curve (previous difficulty and stimulus direction)
+    data = {}
+    data['response'] = mice_data[name, 'response']
+    data['contrast_left'] = mice_data[name, 'contrast_left']
+    data['contrast_right'] = mice_data[name, 'contrast_right']
+
+    right_levels, keys, n_trials = fun.get_right_hist_1(data, cont_diff[name])
+    
+    fun_spc.plot_stim_dir(mice_data, cont_diff, name, keys, n_trials,
+                          right_levels, savefig=False)
+    
+    
+
+    langs, diff_mean, diff_std = fun.get_bars_data(right_levels)
+    fun_spc.plot_bars(langs, diff_mean, diff_std, name, srcdir, saveplot=False)
+
+
+
+# Psychometric curve (superstition)
+import superstition_check as sc
+for name in unique_names: 
     data = {}
     data['response'] = mice_data[name, 'response']
     data['contrast_left'] = mice_data[name, 'contrast_left']
@@ -93,19 +123,3 @@ for name in unique_names:
     idx_RL, right_levels, keys = sc.get_belief(data)
     sc.plt_belief_mice(data, name, cont_diff[name], right[name], srcdir,
                   idx_RL, right_levels, keys, saveplot=True)
-
-
-right = {}
-for name in unique_names:
-    print(name)
-    right[name] = fun_spc.get_rightward(mice_data, cont_diff, name)
-# fun_spc.plot_rightward(right, cont_diff, unique_names, saveplot=False)
-
-    idx_RL, right_levels = fun_spc.get_right_history(mice_data, cont_diff, name)
-
-    langs, diff_mean, diff_std = fun.get_bars_data(right_levels)
-    fun_spc.plot_bars(langs, diff_mean, diff_std, name, srcdir, saveplot=True)
-
-    # fun_spc.plot_psychometric(mice_data, cont_diff, name, idx_RL, right_levels, right[name], savefig=False)
-
-
