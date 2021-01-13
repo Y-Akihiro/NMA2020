@@ -391,7 +391,7 @@ def get_right_history(dat, cont_diff):
         * cont_diff: session specific contrast difference from 'get_task_difference()'
 
     Outputs:
-        * idx_RL: indices of [...]
+        * idx_RL: list of [trials for each left/right/no go choice for each difficulty level.]
         * right_levels: %rightward for each task difficulty ('easy', 'hard', or 'zero')
                         and response ('r' or 'l').
 
@@ -447,9 +447,9 @@ def get_right_history(dat, cont_diff):
             idx_RL[6] = np.append(idx_RL[6], idx)
 
     # Fill the %right choice for each of 9 contrast differences
-    for j in range(n-1):
+    for j in range(n): # range from 0 to 6
         # Skip this process for 'all' case (index of 3)
-        if j < 3:
+        if j != 3:
             # check the contrast differences (unique) and the number of occurences (counts)
             unique, counts = np.unique(cont_diff[idx_RL[j]+1], return_counts=True)
 
@@ -460,18 +460,18 @@ def get_right_history(dat, cont_diff):
                 resp = dat['response'][idx_RL[j]+1][cont_diff[idx_RL[j]+1]==val]
                 array_indx = int(4*val + 4) # convert the contrast difference value to the corresponding array index
                 right_levels[keys[j]][array_indx] = np.count_nonzero(resp<0) / counts[i]*100 # right choice: i = -1
-        
-        elif j >=3:
-            j += 1
-            # check the contrast differences and the number of occurences
-            unique, counts = np.unique(cont_diff[idx_RL[j]+1], return_counts=True)
 
-            print('unique cont_diff size:', np.unique(cont_diff[idx_RL[j]+1]).size, keys[j])
-            for i, val in enumerate(np.unique(cont_diff[idx_RL[j]+1])): # Assumption: cont_diff[...] has all the 9 contrast differences.
-            #     print(i,':', val)
-                resp = dat['response'][idx_RL[j]+1][cont_diff[idx_RL[j]+1]==val]
-                array_indx = (4*val + 4).astype(int) # convert the contrast difference value to the corresponding array index
-                right_levels[keys[j]][array_indx] = np.count_nonzero(resp<0) / counts[i]*100 # right choice: i = -1
+        # elif j >=3:
+        #     j += 1
+        #     # check the contrast differences and the number of occurences
+        #     unique, counts = np.unique(cont_diff[idx_RL[j]+1], return_counts=True)
+
+        #     print('unique cont_diff size:', np.unique(cont_diff[idx_RL[j]+1]).size, keys[j])
+        #     for i, val in enumerate(np.unique(cont_diff[idx_RL[j]+1])): # Assumption: cont_diff[...] has all the 9 contrast differences.
+        #     #     print(i,':', val)
+        #         resp = dat['response'][idx_RL[j]+1][cont_diff[idx_RL[j]+1]==val]
+        #         array_indx = (4*val + 4).astype(int) # convert the contrast difference value to the corresponding array index
+        #         right_levels[keys[j]][array_indx] = np.count_nonzero(resp<0) / counts[i]*100 # right choice: i = -1
 
     right_levels["all"] = get_rightward(dat, cont_diff)
     print('all trial data is added.')
@@ -621,4 +621,8 @@ def get_correctness(dat, cont_diff):
             right_levels[key][i_temp]=np.nan # replace the empty element with NaN
     
     return right_levels, n_trials
+
+
+
+
 

@@ -173,7 +173,7 @@ def plot_stim_dir(n_session, dat, cont_diff, right_levels, keys, n_trials, savep
     plt.plot(xdata, right_levels['easy_cl'],'^:', color=colors['skyblue'],
              label='easy_l (%1.0f)'%n_trials['easy_cl'], alpha=0.5, linewidth=2)
     plt.plot(xdata, right_levels['hard_cl'],'D-', color=colors['dodgerblue'], 
-             label='diff_l (%1.0f)'%n_trials['hard_cl'], alpha=0.5, linewidth=2)
+             label='hard_l (%1.0f)'%n_trials['hard_cl'], alpha=0.5, linewidth=2)
 
     plt.xlabel('Contrast difference')
     plt.ylabel('Rightward (%)')

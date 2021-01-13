@@ -81,6 +81,20 @@ cont_diff = fun_spc.get_contDiff(mice_data, unique_names)
 # for name in unique_names:
 #     fun_spc.plot_resp_contDiff(mice_data, name, cont_diff, saveplot=True)
 
+import superstition_check as sc
+
+for name in unique_names: 
+    
+    data = {}
+    data['response'] = mice_data[name, 'response']
+    data['contrast_left'] = mice_data[name, 'contrast_left']
+    data['contrast_right'] = mice_data[name, 'contrast_right']
+    
+    idx_RL, right_levels, keys = sc.get_belief(data)
+    sc.plt_belief_mice(data, name, cont_diff[name], right[name], srcdir,
+                  idx_RL, right_levels, keys, saveplot=True)
+
+
 right = {}
 for name in unique_names:
     print(name)
