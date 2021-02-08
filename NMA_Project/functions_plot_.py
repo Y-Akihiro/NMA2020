@@ -18,11 +18,13 @@ colors = dict(mcolors.BASE_COLORS, **mcolors.CSS4_COLORS)
 def plot_resp_contDiff(dat, cont_diff, n_session, saveplot=False):
 	'''
 	Inputs:
-		* dat:
-		* cont_diff:
+		* dat: data for the given session.
+        * cont_diff: contrast difference.
+		* n_session: session number. 
 	Outputs:
 		* No output. Only make one plot. 
 	'''
+    
 	fig = plt.figure(figsize=(12,5))
 
 	plt.plot(cont_diff,'ro-', label='contrast difference')

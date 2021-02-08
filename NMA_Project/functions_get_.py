@@ -67,7 +67,7 @@ def get_colors():
 
 def hide_toggle(for_next=False):
     '''
-    This is a function to reduce space for jupyter notebook. 
+    A function to minimize cell size (reduce space) for Jupyter notebooks. 
     '''
     this_cell = """$('div.cell.code_cell.rendered.selected')"""
     next_cell = this_cell + '.next()'
@@ -103,6 +103,10 @@ def hide_toggle(for_next=False):
     return HTML(html)
 
 def load_names(fname=[]):
+    '''
+    This function loads the Steinmetz data file names. Not the data itself. 
+    
+    '''
     del fname
     fname = []
     for j in range(3):
@@ -111,6 +115,8 @@ def load_names(fname=[]):
     url.append("https://osf.io/uv3mw/download")
     url.append("https://osf.io/ehmw2/download")
     
+    # If the data file are not found in the directory, 
+    # this downloads them from the given URL. 
     for j in range(len(url)):
         if not os.path.isfile(fname[j]):
             try:
@@ -159,27 +165,24 @@ def get_rightward(dat, cont_diff):
         * cont_diff - contrast difference between left and right
     Return:
         * rightward - % of mice respond right for each contrast difference
-        * response of -1 corresponds to 'right' and 1 to 'left' choices
+        * unique - unique values of the contrast differences.
+        * counts - number of trials for each value in 'unique'
     """
-    rightward = np.zeros(len(np.unique(cont_diff)))
+    diffs = np.unique(cont_diff)
+    rightward = np.zeros(len(diffs))
     unique, counts = np.unique(cont_diff, return_counts=True) # check the contrast differences and the number of occurences
 
-    for i, val in enumerate(np.unique(cont_diff)):
+    for i, val in enumerate(diffs):
         resp = dat['response'][cont_diff==val]
-        rightward[i] = np.count_nonzero(resp<0) / counts[i]*100 # '-1' for 'right' choice
+        rightward[i] = np.count_nonzero(resp<0) / counts[i]*100 
+        # 'response=-1' for the rightward choice
     
     # print(rightward)
-    return rightward
+    return rightward, unique, counts
 
-def logistic_function(x,x0, y0, a,b):
-    '''
-    Four-parameter logistic function for model fitting
-    '''
-    return y0 + a/(1+np.exp(-(x-x0)/b))
-
-def get_right_hist_1(dat, cont_diff):
+def get_stim_dep_rightward(dat, cont_diff):
     """
-    This function computes %rightward choice with previous difficulty and stimulus direction.
+    This function computes %rightward with previous difficulty & stim direction.
     
     Inputs: 
         * dat - trial data for a selected session.
@@ -199,21 +202,15 @@ def get_right_hist_1(dat, cont_diff):
 
     bool_vals = np.empty([n, len(cont_diff)])
     bool_vals[:] = np.nan
-    # Construct a dictionary
-    right_levels = dict(zip(keys,vals))
-    # idx_bools = dict(zip(keys, bool_vals))
     
+    # ======= Prepare for a dictionary =======
+    right_levels = dict(zip(keys,vals))    
     idx = dict(zip(keys, np.empty([n,1])))
     resp = dict(zip(keys,np.empty([n,1])))
     contrast = dict(zip(keys,np.empty([n,1])))
-    # unq = dict(zip(keys,np.empty([n,1])))
-    # ocr = dict(zip(keys,np.empty([n,1])))
     
     n_trials = dict(zip(keys,np.empty([n,1])))
-    # defn = np.array([[-1], [-0.25], [0.25], [1]])
-    # # defn = np.array([[-1, -0.75], [-0.5,-0.25], [0.25, 0.5], [0.75, 1]]) # diffeernt definition
-    # diffside_defn = dict(zip(keys,defn))
-    # =====================================================================
+    # ========================================
     
     # Get the contrast differences and the number of occurences (trials)
     unique, counts = np.unique(cont_diff, return_counts=True) 
@@ -260,8 +257,6 @@ def get_right_hist_1(dat, cont_diff):
                 right_levels[key][i] = np.divide(sum(response[arr]<0),len(arr), out=np.zeros(1), where=len(arr)!=0)*100
             right_levels[key][i_temp]=np.nan # replace the empty element with NaN
             
-    # unq['easy_cl'], ocr['easy_cl'] = np.unique(contrast['easy_cl'], return_counts=True)
-
     return right_levels, keys, n_trials
 
 def get_right_hist_2(dat, cont_diff):
@@ -381,9 +376,9 @@ def get_task_difference(n_session, dat):
 
     return dt, NT, cont_diff, abs_task_diff, dtask_diff, dtdiff
 
-def get_right_history(dat, cont_diff):
+def get_choice_dep_rightward(dat, cont_diff):
     '''
-    This function make a dictionary of the rightward choice for previous trial 
+    This function makes a dictionary of the rightward choice with the previous trial 
     difficulty and response (left/right). 
 
     Inputs:
@@ -400,10 +395,10 @@ def get_right_history(dat, cont_diff):
     '''
 
     # keys = ['easy_r', 'hard_r', 'zero_r', 'easy_l', 'hard_l', 'zero_l', 'all']
-    # the order of the keys I like to use:
+    # the order of the keys:
     keys = ['hard_l', 'easy_l', 'zero_l', 'all', 'zero_r', 'easy_r', 'hard_r'] # corresponding idx = 0 to 6.
     n = len(keys)
-    vals = np.empty([len(keys),9]) # len(keys) should be 7.
+    vals = np.empty([len(keys),9]) # len(keys) = 7.
     vals[:] = np.nan
 
     # Construct a dictionary
@@ -412,16 +407,15 @@ def get_right_history(dat, cont_diff):
     response=dat['response'] # all responses (340 for session 11)
 
     # Indices of right/left choice
-    idx_choice_r = np.array([i for i, x in enumerate(response<0) if x]) # trial number of right choice
-    idx_choice_l = np.array([i for i, x in enumerate(response>=0) if x]) # trial number of left choice (includes 'no go')
-
-    # Task difficulty of the right/left choice (This is already taken care of by the 'enumerate' part below.)
-    # level_r = abs(cont_diff[idx_choice_r]) # contrast difficulty (abs of contrast difference) of right choice trials 
-    # level_l = abs(cont_diff[idx_choice_l]) # contrast difficulty (abs of contrast difference) of left choice trials 
+        # trial number of rightward choice
+    idx_choice_r = np.array([i for i, x in enumerate(response<0) if x]) 
+        # trial number of leftward choice (this includes 'no go')
+    idx_choice_l = np.array([i for i, x in enumerate(response>=0) if x]) 
+    
 
     idx_RL = [[np.empty(0, int)]*1]*n # List of empty integer arrays. Prepare to store lists of indices. (n=7)
 
-    # Assign indices of the LEFT choices for each difficulty
+    # Assign indices of the LEFTward and no-go choices for each difficulty
     for i, idx in enumerate(idx_choice_l):
         if idx == (len(response)-1): continue # Discard the last trial
         
@@ -435,7 +429,7 @@ def get_right_history(dat, cont_diff):
     # For "ALL" trials (340 trials for session 11)
     idx_RL[3] = np.linspace(0,len(response)-1,len(response)).astype(int) # Just an array of all the indices
 
-    # Assign indices of the RIGHT choices for each difficulty
+    # Assign indices of the RIGHTward choices for each difficulty
     for i, idx in enumerate(idx_choice_r):
         if idx == (len(response)-1): continue # Discard the last trial
         
@@ -446,11 +440,11 @@ def get_right_history(dat, cont_diff):
         elif ((abs(cont_diff[idx]) == 0.25) | (abs(cont_diff[idx]) == 0.5)): # hard trials
             idx_RL[6] = np.append(idx_RL[6], idx)
 
-    # Fill the %right choice for each of 9 contrast differences
+    # Fill the %rightward choice for each of 9 contrast differences
     for j in range(n): # range from 0 to 6
         # Skip this process for 'all' case (index of 3)
         if j != 3:
-            # check the contrast differences (unique) and the number of occurences (counts)
+            # check the contrast differences and the number of occurences
             unique, counts = np.unique(cont_diff[idx_RL[j]+1], return_counts=True)
 
             print('unique cont_diff size:', np.unique(cont_diff[idx_RL[j]+1]).size, keys[j])
@@ -459,19 +453,7 @@ def get_right_history(dat, cont_diff):
             #     print(i,':', val)
                 resp = dat['response'][idx_RL[j]+1][cont_diff[idx_RL[j]+1]==val]
                 array_indx = int(4*val + 4) # convert the contrast difference value to the corresponding array index
-                right_levels[keys[j]][array_indx] = np.count_nonzero(resp<0) / counts[i]*100 # right choice: i = -1
-
-        # elif j >=3:
-        #     j += 1
-        #     # check the contrast differences and the number of occurences
-        #     unique, counts = np.unique(cont_diff[idx_RL[j]+1], return_counts=True)
-
-        #     print('unique cont_diff size:', np.unique(cont_diff[idx_RL[j]+1]).size, keys[j])
-        #     for i, val in enumerate(np.unique(cont_diff[idx_RL[j]+1])): # Assumption: cont_diff[...] has all the 9 contrast differences.
-        #     #     print(i,':', val)
-        #         resp = dat['response'][idx_RL[j]+1][cont_diff[idx_RL[j]+1]==val]
-        #         array_indx = (4*val + 4).astype(int) # convert the contrast difference value to the corresponding array index
-        #         right_levels[keys[j]][array_indx] = np.count_nonzero(resp<0) / counts[i]*100 # right choice: i = -1
+                right_levels[keys[j]][array_indx] = np.count_nonzero(resp<0) / counts[i]*100 # rightward choice: i = -1
 
     right_levels["all"] = get_rightward(dat, cont_diff)
     print('all trial data is added.')
